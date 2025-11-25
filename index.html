@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兩位數乘法練習</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#8b5cf6',
+                        'success': '#10b981',
+                        'error': '#ef4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 確保字體在不同設備上顯示良好 */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* 自定義輸入框樣式 */
+        .math-input {
+            width: 100%;
+            text-align: right;
+            font-size: 2.5rem;
+            padding: 0.5rem 1rem;
+            border: 3px solid #ccc;
+            transition: all 0.2s;
+        }
+        .math-input:focus {
+            border-color: #4f46e5;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
+        <h1 class="text-3xl font-bold text-center text-primary mb-6">
+            兩位數乘法練習
+        </h1>
+
+        <!-- 得分與狀態顯示區 -->
+        <div class="flex justify-between items-center mb-6 p-3 bg-gray-50 rounded-lg">
+            <div class="text-lg font-medium text-gray-700">
+                得分: <span id="score" class="text-2xl font-extrabold text-success ml-1">0</span>
+            </div>
+            <div id="feedback" class="text-xl font-semibold text-center h-8 transition-opacity duration-300">
+                <!-- 答對/答錯訊息會在這裡顯示 -->
+            </div>
+        </div>
+
+        <!-- 題目顯示區 -->
+        <div class="mb-8 p-4 border-b-2 border-gray-300">
+            <div class="flex flex-col items-end text-5xl font-mono font-bold text-gray-800 space-y-2">
+                <!-- 乘數 (2位數) -->
+                <div id="num1-display" class="w-24 text-right">00</div>
+                <!-- 乘號和被乘數 (1位數) -->
+                <div class="flex items-center">
+                    <span class="text-4xl mr-2">×</span>
+                    <span id="num2-display" class="w-24 text-right">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 答案輸入區 -->
+        <div class="mb-8">
+            <label for="answerInput" class="block text-sm font-medium text-gray-700 mb-2">你的答案</label>
+            <input type="number" id="answerInput" class="math-input rounded-lg" placeholder="請輸入答案" onkeypress="handleKey(event)">
+        </div>
+
+        <!-- 按鈕區 -->
+        <div class="flex flex-col space-y-4">
+            <button id="checkButton" onclick="checkAnswer()" class="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-lg hover:bg-secondary transition duration-150 transform hover:scale-[1.01] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary focus:ring-opacity-50">
+                檢查答案
+            </button>
+            <button id="newButton" onclick="newProblem()" class="w-full py-3 px-4 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition duration-150 focus:outline-none focus:ring-4 focus:ring-gray-400 focus:ring-opacity-50">
+                新題目
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 應用程式狀態變數
+        let num1 = 0; // 兩位數 (10-99)
+        let num2 = 0; // 一位數 (1-9)
+        let correctAnswer = 0;
+        let score = 0;
+
+        // DOM 元素引用
+        const num1Display = document.getElementById('num1-display');
+        const num2Display = document.getElementById('num2-display');
+        const answerInput = document.getElementById('answerInput');
+        const scoreDisplay = document.getElementById('score');
+        const feedbackDisplay = document.getElementById('feedback');
+
+        /**
+         * 產生一個新的乘法題目並更新 UI
+         */
+        function generateProblem() {
+            // 產生兩位數 (10 到 99)
+            num1 = Math.floor(Math.random() * 90) + 10;
+            // 產生一位數 (1 到 9)
+            num2 = Math.floor(Math.random() * 9) + 1;
+            correctAnswer = num1 * num2;
+
+            // 更新 UI 顯示
+            num1Display.textContent = num1;
+            num2Display.textContent = num2;
+            answerInput.value = '';
+            answerInput.focus();
+            
+            // 清除之前的錯誤訊息和樣式
+            clearFeedback();
+        }
+
+        /**
+         * 檢查使用者輸入的答案是否正確
+         */
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value, 10);
+
+            // 檢查輸入是否有效
+            if (isNaN(userAnswer)) {
+                showFeedback("請先輸入一個數字。", 'text-error');
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                // 答對了
+                score++;
+                scoreDisplay.textContent = score;
+                showFeedback("答對了！🎉", 'text-success');
+
+                // 答對後立即載入新題目
+                // 使用 setTimeout 讓使用者能看到「答對了」的訊息
+                setTimeout(generateProblem, 1000);
+            } else {
+                // 答錯了
+                showFeedback("答錯了，請再試一次。", 'text-error');
+                // 可以選擇不清空輸入框，讓學生有機會訂正
+                answerInput.focus(); 
+            }
+        }
+
+        /**
+         * 顯示回饋訊息並設定樣式
+         * @param {string} message - 要顯示的訊息
+         * @param {string} className - Tailwind CSS 類名 (例如: 'text-success', 'text-error')
+         */
+        function showFeedback(message, className) {
+            // 移除所有顏色類別
+            feedbackDisplay.className = 'text-xl font-semibold text-center h-8 transition-opacity duration-300';
+            // 加上新的顏色類別和訊息
+            feedbackDisplay.classList.add(className, 'opacity-100');
+            feedbackDisplay.textContent = message;
+
+            // 設定計時器，在一段時間後清除訊息 (答錯時)
+            if (className.includes('error')) {
+                setTimeout(clearFeedback, 3000);
+            }
+        }
+
+        /**
+         * 清除回饋訊息
+         */
+        function clearFeedback() {
+             feedbackDisplay.classList.remove('opacity-100', 'text-success', 'text-error');
+             feedbackDisplay.classList.add('opacity-0');
+             feedbackDisplay.textContent = '';
+        }
+
+        /**
+         * 處理鍵盤事件，特別是 Enter 鍵
+         * @param {KeyboardEvent} event - 鍵盤事件物件
+         */
+        function handleKey(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        }
+
+        /**
+         * 強制生成一個新題目 (用於「新題目」按鈕)
+         */
+        function newProblem() {
+            clearFeedback();
+            generateProblem();
+        }
+
+        /**
+         * 應用程式啟動時的初始化
+         */
+        window.onload = function() {
+            // 初始化時產生第一個題目
+            generateProblem();
+
+            // 確保 Enter 鍵在輸入框中按下時能檢查答案
+            answerInput.addEventListener('keypress', handleKey);
+
+            console.log("兩位數乘法練習應用程式已啟動。");
+        };
+    </script>
+</body>
+</html>
